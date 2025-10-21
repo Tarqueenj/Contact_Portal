@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Contact Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-gray-800">
+        <i class="fas fa-tachometer-alt mr-2"></i>Contact Management Dashboard
+    </h1>
+
+    <!-- Add Contact Form -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+            <i class="fas fa-user-plus mr-2"></i>Add New Contact
+        </h2>
+        
+        <form method="POST" action="{{ url_for('add_contact') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="mobile" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-phone mr-1"></i>Mobile Phone Number *
+                </label>
+                <input type="tel" id="mobile" name="mobile" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label for="email" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-envelope mr-1"></i>Email Address *
+                </label>
+                <input type="email" id="email" name="email" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label for="address" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-map-marker-alt mr-1"></i>Address *
+                </label>
+                <input type="text" id="address" name="address" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+                <label for="registration_number" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-id-card mr-1"></i>Registration Number *
+                </label>
+                <input type="text" id="registration_number" name="registration_number" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="md:col-span-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                    <i class="fas fa-plus mr-2"></i>Add Contact
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Contact -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+            <i class="fas fa-search mr-2"></i>Search Contact
+        </h2>
+        
+        <div class="flex gap-4">
+            <div class="flex-1">
+                <label for="search_registration" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-id-card mr-1"></i>Search by Registration Number
+                </label>
+                <input type="text" id="search_registration" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="Enter registration number">
+            </div>
+            <div class="flex items-end">
+                <button onclick="searchContact()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search Results -->
+        <div id="searchResults" class="mt-4 hidden">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="text-lg font-bold mb-2 text-blue-800">Search Result:</h3>
+                <div id="searchResultContent"></div>
+            </div>
+        </div>
+        
+        <div id="searchError" class="mt-4 hidden">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span id="searchErrorMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Contacts List -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">
+            <i class="fas fa-address-book mr-2"></i>All Contacts ({{ contacts|length }})
+        </h2>
+        
+        {% if contacts %}
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Registration Number</th>
+                        <th class="px-4 py-2 text-left">Mobile</th>
+                        <th class="px-4 py-2 text-left">Email</th>
+                        <th class="px-4 py-2 text-left">Address</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <i class="fas fa-id-card mr-1 text-gray-500"></i>
+                            {{ contact.registration_number }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <i class="fas fa-phone mr-1 text-gray-500"></i>
+                            {{ contact.mobile }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <i class="fas fa-envelope mr-1 text-gray-500"></i>
+                            {{ contact.email }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <i class="fas fa-map-marker-alt mr-1 text-gray-500"></i>
+                            {{ contact.address }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <form method="POST" action="{{ url_for('delete_contact', contact_id=contact._id) }}" 
+                                  onsubmit="return confirm('Are you sure you want to delete this contact?');">
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">
+                                    <i class="fas fa-trash mr-1"></i>Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-inbox text-4xl mb-2"></i>
+            <p>No contacts yet. Add your first contact above!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function searchContact() {
+    const registrationNumber = document.getElementById('search_registration').value.trim();
+    const resultsDiv = document.getElementById('searchResults');
+    const errorDiv = document.getElementById('searchError');
+    const resultContent = document.getElementById('searchResultContent');
+    const errorMessage = document.getElementById('searchErrorMessage');
+    
+    // Hide previous results
+    resultsDiv.classList.add('hidden');
+    errorDiv.classList.add('hidden');
+    
+    if (!registrationNumber) {
+        errorMessage.textContent = 'Please enter a registration number';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    
+    // Make AJAX request
+    fetch('{{ url_for("search_contact") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ registration_number: registrationNumber })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Contact not found');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Display results
+        resultContent.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <strong class="text-gray-700">Registration Number:</strong>
+                    <p class="text-gray-900">${data.registration_number}</p>
+                </div>
+                <div>
+                    <strong class="text-gray-700">Mobile:</strong>
+                    <p class="text-gray-900">${data.mobile}</p>
+                </div>
+                <div>
+                    <strong class="text-gray-700">Email:</strong>
+                    <p class="text-gray-900">${data.email}</p>
+                </div>
+                <div>
+                    <strong class="text-gray-700">Address:</strong>
+                    <p class="text-gray-900">${data.address}</p>
+                </div>
+            </div>
+        `;
+        resultsDiv.classList.remove('hidden');
+    })
+    .catch(error => {
+        errorMessage.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+    });
+}
+
+// Allow search on Enter key
+document.getElementById('search_registration').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchContact();
+    }
+});
+</script>
+{% endblock %}
